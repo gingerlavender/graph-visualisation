@@ -81,7 +81,6 @@ std::string visualise(const graph_t& graph, const std::string& filename, const s
  * \param length Количество вершин в пути
  * \return true, если путь существует, false в противном случае
  * \throw std::bad_alloc В случае ошибки выделения памяти
- * \throw std::runtime_error В случае, если пути не существует
 */
 bool is_path(const graph_t& graph, const size_t* path, size_t length);
 
@@ -91,7 +90,6 @@ bool is_path(const graph_t& graph, const size_t* path, size_t length);
  * \param path Вектор вершин пути
  * \return true, если путь существует, false в противном случае
  * \throw std::bad_alloc В случае ошибки выделения памяти
- * \throw std::runtime_error В случае, если пути не существует
 */
 bool is_path(const graph_t& graph, const std::vector<size_t>& path);
 
