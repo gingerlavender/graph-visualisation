@@ -25,28 +25,8 @@ void add_edge(graph_t& graph, size_t v1, size_t v2) {
     graph.adjacency[v2 - 1].push_front(v1);
 }
 
-std::string visualise(const graph_t& graph, const std::string& filename) {
-    std::ofstream out;
-    std::string link = "file://";
-    out.open(filename);
-    out << "strict graph{";
-    for (size_t i = 0; i < graph.adjacency.size(); ++i) {
-        out << i + 1 << ";";
-        for (int val : graph.adjacency[i]) {
-            out << i + 1 << "--" << val << ";";
-        }
-    }
-    out << "}\n";
-    out.close();
-    std::string path = std::filesystem::canonical(filename);
-    link = link + filename + path + ".png";
-    std::string command = "dot " + filename + " -Tpng -o " + filename + ".png";
-    system(command.c_str());
-    return link;
-}
-
 std::string visualise(const graph_t& graph, const std::string& filename, const size_t* path, size_t length) {
-    if (!is_path(graph, path, length)) {
+    if (path != nullptr && !is_path(graph, path, length)) {
         throw std::runtime_error("This is not a path!");
     }
     std::ofstream out;
@@ -63,9 +43,10 @@ std::string visualise(const graph_t& graph, const std::string& filename, const s
         if (i != length - 1) {
             out << path[i] << "--";
         } else {
-            out << path[i] << "[color=\"red\"]}\n";
+            out << path[i] << "[color=\"red\"]";
         }
     }
+    out << "}\n";
     out.close();
     std::string filepath = std::filesystem::canonical(filename);
     link = link + filename + filepath + ".png";
@@ -75,34 +56,12 @@ std::string visualise(const graph_t& graph, const std::string& filename, const s
 }
 
 std::string visualise(const graph_t& graph, const std::string& filename, const std::vector<size_t>& path) {
-    if (!is_path(graph, path)) {
-        throw std::runtime_error("This is not a path!");
+    return visualise(graph, filename, path.data(), path.size());
     }
-    std::ofstream out;
-    std::string link = "file://";
-    out.open(filename);
-    out << "strict graph{";
-    for (size_t i = 0; i < graph.adjacency.size(); ++i) {
-        out << i + 1 << ";";
-        for (int val : graph.adjacency[i]) {
-            out << i + 1 << "--" << val << ";";
-        }
-    }
-    for (size_t i = 0; i < path.size(); ++i) {
-        if (i != path.size() - 1) {
-            out << path[i] << "--";
-        } else {
-            out << path[i] << "[color=\"red\"]}\n";
-        }
-    }
-    out.close();
-    std::string filepath = std::filesystem::canonical(filename);
-    link = link + filename + filepath + ".png";
-    std::string command = "dot " + filename + " -Tpng -o " + filepath + ".png";
-    system(command.c_str());
-    return link;
-}
 
+std::string visualise(const graph_t& graph, const std::string& filename) {
+    return visualise(graph, filename, nullptr, 0);
+    }
 
 bool is_path(const graph_t& graph, const size_t* path, size_t length) {
     if (std::any_of(path, path + length, [=](const size_t i) { return (i <= 0 || i > graph.adjacency.size()); })) {
@@ -117,13 +76,5 @@ bool is_path(const graph_t& graph, const size_t* path, size_t length) {
 }
 
 bool is_path(const graph_t& graph, const std::vector<size_t>& path) {
-    if (std::any_of(path.begin(), path.end(), [=](const size_t i) { return (i <= 0 || i > graph.adjacency.size()); })) {
-        return false;
-    }
-    for (size_t i = 0; i < path.size() - 1; ++i) {
-        if (std::none_of(graph.adjacency[path[i] - 1].begin(), graph.adjacency[path[i] - 1].end(), [=, &path](size_t val) { return (val == path[i + 1]); })) {
-            return false;
-        }
-    }
-    return true;
+    return is_path(graph, path.data(), path.size());
 }
